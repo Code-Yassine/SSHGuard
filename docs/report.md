@@ -16,4 +16,3 @@ SSHGuard is a Bash security tool that monitors SSH authentication logs to detect
 ## Security Value
 
 The project demonstrates practical Linux security concepts including log analysis, attack detection, firewall protection, and incident logging.
-

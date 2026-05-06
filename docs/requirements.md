@@ -17,4 +17,3 @@
 - Access to `/var/log/auth.log` or another configured auth log file.
 - `iptables` for blocking features.
 - Root privileges for blocking and restoring firewall rules.
-

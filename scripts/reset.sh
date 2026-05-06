@@ -9,4 +9,3 @@ set -o pipefail
 rm -f tests/auth_light.log tests/auth_medium.log tests/auth_heavy.log
 
 echo "SSHGuard logs and generated test fixtures reset."
-

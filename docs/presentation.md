@@ -9,4 +9,3 @@ In short, SSHGuard follows this workflow:
 ```text
 Read SSH logs -> Detect failed attempts -> Count IPs -> Block attackers -> Save history
 ```
-
