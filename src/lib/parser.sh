@@ -23,7 +23,7 @@ extract_failed_ips() {
         return 103
     fi
 
-    log_event "INFO" "Debut de l'analyse du fichier : $log_file"
+    log_event "INFOS" "Debut de l'analyse du fichier : $log_file"
 
     > "$TEMP_IPS_FILE"
 
@@ -36,10 +36,10 @@ extract_failed_ips() {
 
     if [[ "$count" -eq 0 ]]; then
         print_info "Aucune tentative echouee detectee dans $log_file"
-        log_event "INFO" "Aucune tentative echouee detectee dans $log_file"
+        log_event "INFOS" "Aucune tentative echouee detectee dans $log_file"
     else
         print_success "Extraction terminee : $count tentatives echouees detectees"
-        log_event "INFO" "Extraction terminee : $count tentatives echouees detectees"
+        log_event "INFOS" "Extraction terminee : $count tentatives echouees detectees"
     fi
 
     return 0
@@ -52,7 +52,7 @@ get_unique_ips() {
     fi
 
     sort "$TEMP_IPS_FILE" | uniq -c | sort -rn | awk '{print $2":"$1}'
-    log_event "INFO" "Liste des IP uniques generee"
+    log_event "INFOS" "Liste des IP uniques generee"
     return 0
 }
 
@@ -87,7 +87,7 @@ validate_extracted_ips() {
     while IFS= read -r ip; do
         if ! is_valid_ip "$ip"; then
             print_warning "IP invalide detectee : $ip"
-            log_event "WARNING" "IP invalide detectee dans le parsing : $ip"
+            log_event "INFOS" "IP invalide detectee dans le parsing : $ip"
             ((invalid_count++))
         fi
     done < "$TEMP_IPS_FILE"
@@ -99,6 +99,6 @@ validate_extracted_ips() {
     fi
 
     print_success "Toutes les IP extraites sont valides"
-    log_event "INFO" "Validation des IP : toutes valides"
+    log_event "INFOS" "Validation des IP : toutes valides"
     return 0
 }

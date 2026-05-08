@@ -11,7 +11,6 @@
 # Example:
 #   If THRESHOLD=5 and one IP appears 5 times, mark it suspicious.
 
-readonly TEMP_IPS_FILE="/tmp/securewatch_ips.tmp"
 readonly TEMP_SUSPECTS_FILE="/tmp/securewatch_suspects.tmp"
 
 detect_suspicious_ips() {
@@ -28,7 +27,7 @@ detect_suspicious_ips() {
         return 102
     fi
 
-    log_event "INFO" "Début de la détection des IP suspectes avec seuil : $threshold"
+    log_event "INFOS" "Début de la détection des IP suspectes avec seuil : $threshold"
 
     > "$TEMP_SUSPECTS_FILE"
 
@@ -37,7 +36,7 @@ detect_suspicious_ips() {
 
     if [[ "$ip_count" -eq 0 ]]; then
         print_info "Aucune IP à analyser"
-        log_event "INFO" "Aucune IP à analyser"
+        log_event "INFOS" "Aucune IP à analyser"
         return 0
     fi
 
@@ -55,10 +54,10 @@ detect_suspicious_ips() {
 
     if [[ "$suspicious_count" -eq 0 ]]; then
         print_info "Aucune IP suspecte détectée"
-        log_event "INFO" "Aucune IP suspecte détectée avec seuil : $threshold"
+        log_event "INFOS" "Aucune IP suspecte détectée avec seuil : $threshold"
     else
         print_success "Détection terminée : $suspicious_count IP(s) suspecte(s) détectée(s)"
-        log_event "INFO" "Détection terminée : $suspicious_count IP(s) suspecte(s) avec seuil : $threshold"
+        log_event "INFOS" "Détection terminée : $suspicious_count IP(s) suspecte(s) avec seuil : $threshold"
     fi
 
     return 0
@@ -95,7 +94,7 @@ validate_suspicious_ips() {
     while IFS=':' read -r ip count; do
         if ! is_valid_ip "$ip"; then
             print_warning "IP suspecte invalide détectée : $ip"
-            log_event "WARNING" "IP suspecte invalide détectée : $ip"
+            log_event "INFOS" "IP suspecte invalide détectée : $ip"
             ((invalid_count++))
         fi
     done < "$TEMP_SUSPECTS_FILE"
@@ -107,6 +106,6 @@ validate_suspicious_ips() {
     fi
 
     print_success "Toutes les IP suspectes sont valides"
-    log_event "INFO" "Validation des IP suspectes : toutes valides"
+    log_event "INFOS" "Validation des IP suspectes : toutes valides"
     return 0
 }

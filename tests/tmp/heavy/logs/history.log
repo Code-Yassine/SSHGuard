@@ -1,0 +1,27 @@
+2026-05-08-12-40-40 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-12-40-40 : pc : INFO : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-12-40-40 : pc : INFO : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-12-40-41 : pc : INFO : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50
+2026-05-08-12-40-54 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-12-40-55 : pc : INFO : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-12-40-55 : pc : INFO : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-12-40-55 : pc : INFO : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50
+2026-05-08-12-41-48 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-12-41-49 : pc : INFO : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-12-41-49 : pc : INFO : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-12-41-49 : pc : INFO : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50
+2026-05-08-13-19-20 : pc : INFOS : Execution en mode fork (PID: 137)
+2026-05-08-13-19-20 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-13-19-21 : pc : INFOS : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-13-19-21 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-13-19-21 : pc : INFOS : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50
+2026-05-08-13-20-05 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-13-20-05 : pc : INFOS : Execution en mode fork (PID: 1972)
+2026-05-08-13-20-05 : pc : INFOS : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-13-20-05 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-13-20-05 : pc : INFOS : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50
+2026-05-08-15-33-43 : root : INFOS : Execution en mode fork (PID: 2420)
+2026-05-08-15-33-43 : root : INFOS : Debut de l'analyse du fichier : /mnt/c/Users/pc/Desktop/SSHGuard/tests/tmp/heavy/auth.log
+2026-05-08-15-33-43 : root : INFOS : Extraction terminee : 300 tentatives echouees detectees
+2026-05-08-15-33-43 : root : INFOS : Début de la détection des IP suspectes avec seuil : 50
+2026-05-08-15-33-43 : root : INFOS : Détection terminée : 2 IP(s) suspecte(s) avec seuil : 50

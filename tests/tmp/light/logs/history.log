@@ -1,0 +1,32 @@
+2026-05-08-12-40-40 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-12-40-40 : pc : INFO : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-12-40-40 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-40-41 : pc : INFO : Détection terminée : 4 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-12-40-52 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-12-40-52 : pc : INFO : Extraction terminee : 2 tentatives echouees detectees
+2026-05-08-12-40-52 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-40-53 : pc : INFO : Aucune IP suspecte détectée avec seuil : 5
+2026-05-08-12-41-46 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-12-41-46 : pc : INFO : Extraction terminee : 2 tentatives echouees detectees
+2026-05-08-12-41-46 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-41-47 : pc : INFO : Aucune IP suspecte détectée avec seuil : 5
+2026-05-08-13-19-18 : pc : INFOS : Execution en mode subshell
+2026-05-08-13-19-18 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-13-19-18 : pc : INFOS : Extraction terminee : 2 tentatives echouees detectees
+2026-05-08-13-19-18 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-13-19-18 : pc : INFOS : Aucune IP suspecte détectée avec seuil : 5
+2026-05-08-13-20-02 : pc : INFOS : Execution en mode subshell
+2026-05-08-13-20-02 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-13-20-02 : pc : INFOS : Extraction terminee : 2 tentatives echouees detectees
+2026-05-08-13-20-02 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-13-20-03 : pc : INFOS : Aucune IP suspecte détectée avec seuil : 5
+2026-05-08-15-33-03 : yassine : INFOS : Execution en mode subshell
+2026-05-08-15-33-03 : yassine : INFOS : Debut de l'analyse du fichier : /mnt/c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-15-33-03 : yassine : INFOS : Aucune tentative echouee detectee dans /mnt/c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-15-33-03 : yassine : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-15-33-03 : yassine : INFOS : Aucune IP à analyser
+2026-05-08-15-33-17 : root : INFOS : Execution en mode subshell
+2026-05-08-15-33-17 : root : INFOS : Debut de l'analyse du fichier : /mnt/c/Users/pc/Desktop/SSHGuard/tests/tmp/light/auth.log
+2026-05-08-15-33-17 : root : INFOS : Extraction terminee : 2 tentatives echouees detectees
+2026-05-08-15-33-17 : root : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-15-33-17 : root : INFOS : Aucune IP suspecte détectée avec seuil : 5

@@ -1,0 +1,485 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{SecureWatch}
+\rhead{Source Code Explanation}
+\cfoot{\thepage}
+
+\titleformat{\section}{\Large\bfseries}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{}
+
+\lstdefinestyle{bashstyle}{
+    language=bash,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{teal},
+    breaklines=true,
+    frame=single,
+    columns=fullflexible,
+    showstringspaces=false,
+    tabsize=4
+}
+
+\title{
+    \textbf{SecureWatch: Source Code Explanation}\\
+    \large Bash Tool for SSH Brute Force Detection and Blocking
+}
+\author{Team Project}
+\date{2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Project Goal}
+
+SecureWatch is a Bash security tool designed to detect repeated failed SSH login attempts.
+The program reads an authentication log file, extracts IP addresses from lines containing
+\texttt{Failed password}, counts the number of failed attempts per IP, compares the count
+with a configurable threshold, and optionally blocks suspicious IP addresses using
+\texttt{iptables}.
+
+The tool was developed to satisfy the mini-project requirements: use Bash and standard
+Linux commands, support several command-line options, implement process execution modes,
+write logs, handle errors, and provide light, medium, and heavy tests.
+
+\section{Global Architecture}
+
+The project is organized into small Bash modules. Each file has a clear responsibility.
+
+\begin{longtable}{|p{5cm}|p{9cm}|}
+\hline
+\textbf{File} & \textbf{Role} \\
+\hline
+\texttt{src/securewatch.sh} & Main controller. Reads options, loads configuration, chooses the action, and launches execution modes. \\
+\hline
+\texttt{src/config/config.conf} & Default configuration values such as threshold, log file, and output log paths. \\
+\hline
+\texttt{src/lib/parser.sh} & Reads the SSH log file and extracts IP addresses from failed login attempts. \\
+\hline
+\texttt{src/lib/detection.sh} & Counts attempts per IP and decides which IP addresses are suspicious. \\
+\hline
+\texttt{src/lib/blocking.sh} & Blocks suspicious IPs with \texttt{iptables} and restores blocked IPs. \\
+\hline
+\texttt{src/lib/logging.sh} & Writes events to \texttt{history.log} using the required format. \\
+\hline
+\texttt{src/lib/utils.sh} & Shared helper functions: colored output, file checks, root checks, and IP validation. \\
+\hline
+\texttt{scripts/install.sh} & Installs the command as \texttt{securewatch} so it can be executed from anywhere. \\
+\hline
+\texttt{tests/*.sh} & Light, medium, and heavy test scenarios. \\
+\hline
+\end{longtable}
+
+\section{Main Program: \texttt{securewatch.sh}}
+
+\subsection{Loading the Project Files}
+
+The main script first detects its real location. This is important because the program can
+be installed as a symbolic link in \texttt{/usr/local/bin/securewatch}. Even if the user runs
+\texttt{securewatch} from another directory, the script can still find its configuration and
+library files.
+
+\begin{lstlisting}[style=bashstyle]
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+    SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
+\end{lstlisting}
+
+After that, the script loads the configuration and all modules:
+
+\begin{lstlisting}[style=bashstyle]
+source "${SCRIPT_DIR}/config/config.conf"
+source "${SCRIPT_DIR}/lib/utils.sh"
+source "${SCRIPT_DIR}/lib/logging.sh"
+source "${SCRIPT_DIR}/lib/parser.sh"
+source "${SCRIPT_DIR}/lib/detection.sh"
+source "${SCRIPT_DIR}/lib/blocking.sh"
+\end{lstlisting}
+
+\subsection{Command-Line Options}
+
+The script uses \texttt{getopts} to parse Linux-style options.
+
+\begin{longtable}{|p{2cm}|p{11cm}|}
+\hline
+\textbf{Option} & \textbf{Meaning} \\
+\hline
+\texttt{-h} & Display detailed help. \\
+\hline
+\texttt{-d} & Run detection only. \\
+\hline
+\texttt{-b} & Detect and block suspicious IPs. Requires administrator privileges. \\
+\hline
+\texttt{-r} & Restore/unblock previously blocked IPs. Requires administrator privileges. \\
+\hline
+\texttt{-l <dir>} & Store \texttt{history.log} and \texttt{blacklist.txt} in a custom directory. \\
+\hline
+\texttt{-s} & Run the action in a subshell. \\
+\hline
+\texttt{-f} & Run the action in the background without waiting. \\
+\hline
+\texttt{-t} & Run the action as a background job, then wait for completion. \\
+\hline
+\end{longtable}
+
+\subsection{Action Selection}
+
+The main script separates the action from the execution mode. For example, the action can
+be detection, blocking, or restore, while the execution mode can be normal, subshell, fork,
+or thread-style background job.
+
+\begin{lstlisting}[style=bashstyle]
+if [[ "$action" == "restore" ]]; then
+    restore_blocked_ips
+elif [[ "$action" == "block" ]]; then
+    run_blocking
+elif [[ "$action" == "detect" ]]; then
+    run_detection
+fi
+\end{lstlisting}
+
+\section{Execution Modes: \texttt{-s}, \texttt{-f}, and \texttt{-t}}
+
+The mini-project asks for concepts related to subshell, fork, and thread execution. Bash does
+not provide native threads like C or Java, so the project uses Bash background jobs to
+simulate thread-style execution.
+
+\begin{longtable}{|p{2cm}|p{4cm}|p{3cm}|p{5cm}|}
+\hline
+\textbf{Option} & \textbf{Code} & \textbf{Waits?} & \textbf{Explanation} \\
+\hline
+\texttt{-s} & \texttt{( execute\_action )} & Yes & Runs the action inside a child shell. \\
+\hline
+\texttt{-f} & \texttt{execute\_action \&} & No & Starts the action in the background and immediately returns. \\
+\hline
+\texttt{-t} & \texttt{execute\_action \& wait \$!} & Yes & Starts a background job and synchronizes with \texttt{wait}. \\
+\hline
+\end{longtable}
+
+\begin{lstlisting}[style=bashstyle]
+if [[ "$subshell" -eq 1 ]]; then
+    log_event "INFOS" "Execution en mode subshell"
+    ( execute_action )
+elif [[ "$bg_fork" -eq 1 ]]; then
+    execute_action &
+    print_info "Execution en mode fork (PID: $!)"
+    log_event "INFOS" "Execution en mode fork (PID: $!)"
+elif [[ "$bg_thread" -eq 1 ]]; then
+    execute_action &
+    print_info "Execution en mode thread."
+    log_event "INFOS" "Execution en mode thread"
+    wait $!
+else
+    execute_action
+fi
+\end{lstlisting}
+
+\section{Configuration: \texttt{config.conf}}
+
+The configuration file defines default values. The user can override \texttt{LOG\_FILE} and
+\texttt{THRESHOLD} from the command line.
+
+\begin{lstlisting}[style=bashstyle]
+THRESHOLD="${THRESHOLD:-5}"
+LOG_FILE="${LOG_FILE:-/var/log/auth.log}"
+HISTORY_LOG="${HISTORY_LOG:-logs/history.log}"
+BLOCKED_IPS_LOG="${BLOCKED_IPS_LOG:-logs/blocked_ips.log}"
+\end{lstlisting}
+
+Example:
+
+\begin{lstlisting}[style=bashstyle]
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-logs
+\end{lstlisting}
+
+\section{Parser Module: \texttt{parser.sh}}
+
+The parser is responsible for reading the authentication log file and extracting IP addresses
+from failed SSH login attempts.
+
+\subsection{Input Validation}
+
+Before reading the file, the module verifies that the log file exists and can be read.
+
+\begin{lstlisting}[style=bashstyle]
+if ! require_file "$log_file"; then
+    log_event "ERROR" "Fichier de log introuvable : $log_file"
+    return 102
+fi
+
+if [[ ! -r "$log_file" ]]; then
+    print_error "Permission refusee pour lire : $log_file"
+    log_event "ERROR" "Permission refusee pour lire : $log_file"
+    return 103
+fi
+\end{lstlisting}
+
+\subsection{IP Extraction}
+
+The extraction uses standard Linux filters:
+\texttt{grep} selects failed SSH attempts, and \texttt{grep -oP} extracts only the IP address.
+
+\begin{lstlisting}[style=bashstyle]
+grep "Failed password" "$log_file" 2>/dev/null | \
+    grep -oP 'from \K[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' \
+    > "$TEMP_IPS_FILE"
+\end{lstlisting}
+
+The extracted IP addresses are stored in:
+
+\begin{lstlisting}[style=bashstyle]
+/tmp/securewatch_ips.tmp
+\end{lstlisting}
+
+\section{Detection Module: \texttt{detection.sh}}
+
+The detection module counts failed attempts per IP address and compares them with the
+threshold.
+
+\subsection{Counting Attempts}
+
+The module uses a pipeline of Linux commands:
+
+\begin{lstlisting}[style=bashstyle]
+sort "$TEMP_IPS_FILE" | uniq -c | sort -rn
+\end{lstlisting}
+
+This pipeline sorts IP addresses, groups identical IPs, counts each group, and sorts the
+result from highest count to lowest count.
+
+\subsection{Suspicious IP Decision}
+
+If an IP count is greater than or equal to the threshold, it is written to the suspects file.
+
+\begin{lstlisting}[style=bashstyle]
+if [[ "$count" -ge "$threshold" ]]; then
+    echo "$ip:$count" >> "$TEMP_SUSPECTS_FILE"
+fi
+\end{lstlisting}
+
+The suspicious IPs are stored in:
+
+\begin{lstlisting}[style=bashstyle]
+/tmp/securewatch_suspects.tmp
+\end{lstlisting}
+
+\section{Blocking Module: \texttt{blocking.sh}}
+
+The blocking module uses \texttt{iptables}. Because firewall modification is a privileged
+operation, the module checks that the script is running as root.
+
+\subsection{Root Permission Check}
+
+\begin{lstlisting}[style=bashstyle]
+require_root || return 103
+\end{lstlisting}
+
+\subsection{Blocking an IP}
+
+The script first checks whether the IP is already blocked. If not, it adds a DROP rule.
+
+\begin{lstlisting}[style=bashstyle]
+if iptables -C INPUT -s "$ip" -j DROP 2>/dev/null; then
+    print_info "L'IP $ip est deja bloquee par iptables."
+else
+    iptables -A INPUT -s "$ip" -j DROP
+fi
+\end{lstlisting}
+
+The IP is also saved in the blacklist file so it can be restored later.
+
+\subsection{Restoring Blocked IPs}
+
+The restore action reads the blacklist and removes each matching \texttt{iptables} rule.
+
+\begin{lstlisting}[style=bashstyle]
+iptables -D INPUT -s "$ip" -j DROP
+\end{lstlisting}
+
+After restore, the blacklist file is emptied.
+
+\section{Logging Module: \texttt{logging.sh}}
+
+The logging module writes messages to \texttt{history.log}. The required format is:
+
+\begin{lstlisting}[style=bashstyle]
+yyyy-mm-dd-hh-mm-ss : username : INFOS|ERROR : message
+\end{lstlisting}
+
+The timestamp and username are generated automatically:
+
+\begin{lstlisting}[style=bashstyle]
+timestamp="$(date '+%Y-%m-%d-%H-%M-%S')"
+user_name="${USER:-$(whoami 2>/dev/null || printf 'unknown')}"
+\end{lstlisting}
+
+The function also normalizes old names such as \texttt{INFO} to \texttt{INFOS}, which helps keep
+the log format compatible with the project requirement.
+
+\begin{lstlisting}[style=bashstyle]
+case "$type" in
+    INFO)
+        type="INFOS"
+        ;;
+    WARNING|WARN)
+        type="INFOS"
+        ;;
+esac
+\end{lstlisting}
+
+\section{Utility Module: \texttt{utils.sh}}
+
+The utility file contains common helper functions used by all modules.
+
+\begin{itemize}
+    \item \texttt{print\_info}, \texttt{print\_success}, \texttt{print\_warning}, and \texttt{print\_error} display colored terminal messages.
+    \item \texttt{require\_file} checks whether a file exists.
+    \item \texttt{require\_directory} checks whether a directory exists.
+    \item \texttt{require\_root} verifies administrator privileges.
+    \item \texttt{is\_valid\_ip} validates IPv4 addresses.
+\end{itemize}
+
+The IP validation first checks the general format, then verifies that every octet is between
+0 and 255.
+
+\section{Install Script: \texttt{scripts/install.sh}}
+
+The install script prepares the project and creates a command named \texttt{securewatch}.
+This allows the user to run the tool from any directory.
+
+\begin{lstlisting}[style=bashstyle]
+BIN_DIR="${INSTALL_BIN_DIR:-/usr/local/bin}"
+COMMAND_NAME="${COMMAND_NAME:-securewatch}"
+TARGET="$ROOT_DIR/src/securewatch.sh"
+LINK_PATH="$BIN_DIR/$COMMAND_NAME"
+ln -sf "$TARGET" "$LINK_PATH"
+\end{lstlisting}
+
+Typical installation on Linux:
+
+\begin{lstlisting}[style=bashstyle]
+cd ~/SSHGuard
+bash scripts/install.sh
+securewatch -h
+\end{lstlisting}
+
+\section{Testing Strategy}
+
+The project includes three tests required by the assignment.
+
+\begin{longtable}{|p{4cm}|p{4cm}|p{6cm}|}
+\hline
+\textbf{Test} & \textbf{Mode} & \textbf{Purpose} \\
+\hline
+\texttt{light\_test.sh} & Subshell \texttt{-s} & Small log. No IP should reach the threshold. \\
+\hline
+\texttt{medium\_test.sh} & Thread-style \texttt{-t} & One IP reaches the threshold and must be detected. \\
+\hline
+\texttt{heavy\_test.sh} & Fork \texttt{-f} & Large log with hundreds of failed attempts. Two IPs must be detected. \\
+\hline
+\end{longtable}
+
+Run all tests:
+
+\begin{lstlisting}[style=bashstyle]
+bash tests/light_test.sh
+bash tests/medium_test.sh
+bash tests/heavy_test.sh
+\end{lstlisting}
+
+\section{Manual Demonstration Commands}
+
+Create a fake authentication log:
+
+\begin{lstlisting}[style=bashstyle]
+cat > /tmp/auth-demo.log <<'EOF'
+Jan  1 00:00:01 host sshd[1]: Failed password for invalid user admin from 192.168.1.10 port 111 ssh2
+Jan  1 00:00:02 host sshd[2]: Failed password for invalid user admin from 192.168.1.10 port 112 ssh2
+Jan  1 00:00:03 host sshd[3]: Failed password for invalid user admin from 192.168.1.10 port 113 ssh2
+Jan  1 00:00:04 host sshd[4]: Failed password for invalid user admin from 192.168.1.10 port 114 ssh2
+Jan  1 00:00:05 host sshd[5]: Failed password for invalid user admin from 192.168.1.10 port 115 ssh2
+Jan  1 00:00:06 host sshd[6]: Failed password for invalid user test from 10.0.0.20 port 116 ssh2
+EOF
+\end{lstlisting}
+
+Run detection:
+
+\begin{lstlisting}[style=bashstyle]
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-demo-logs
+\end{lstlisting}
+
+Run the three execution modes:
+
+\begin{lstlisting}[style=bashstyle]
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -s -l ~/securewatch-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -t -l ~/securewatch-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -f -l ~/securewatch-demo-logs
+\end{lstlisting}
+
+Run blocking and restore:
+
+\begin{lstlisting}[style=bashstyle]
+sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -b -l /var/log/securewatch
+sudo securewatch -r -l /var/log/securewatch
+\end{lstlisting}
+
+\section{Requirement Mapping}
+
+\begin{longtable}{|p{6cm}|p{8cm}|}
+\hline
+\textbf{Requirement} & \textbf{Implementation} \\
+\hline
+Bash script for a real need & SSH brute force detection and blocking. \\
+\hline
+Use Linux commands and filters & Uses \texttt{grep}, \texttt{sort}, \texttt{uniq}, \texttt{awk}, \texttt{wc}, \texttt{iptables}, pipes, and redirection. \\
+\hline
+Mandatory options & Implements \texttt{-h}, \texttt{-f}, \texttt{-t}, \texttt{-s}, \texttt{-l}, \texttt{-r}; also adds \texttt{-d} and \texttt{-b}. \\
+\hline
+Administrator privileges & Blocking and restore require root privileges through \texttt{require\_root}. \\
+\hline
+Logging & Writes \texttt{history.log} entries with timestamp, username, type, and message. \\
+\hline
+Error handling & Uses error codes such as 100, 101, 102, and 103. \\
+\hline
+Light, medium, heavy tests & Implemented in \texttt{tests/light\_test.sh}, \texttt{tests/medium\_test.sh}, and \texttt{tests/heavy\_test.sh}. \\
+\hline
+Help documentation & Available with \texttt{securewatch -h}. \\
+\hline
+\end{longtable}
+
+\section{Conclusion}
+
+SecureWatch demonstrates a complete Bash-based security workflow. It combines log parsing,
+regular expressions, file manipulation, pipes, process control, environment variables,
+privilege checks, error management, and firewall commands. Its modular design makes the
+source code easy to explain: the parser extracts IPs, the detector identifies suspicious
+activity, the blocker handles firewall rules, the logger records events, and the main
+controller connects everything through command-line options.
+
+\end{document}

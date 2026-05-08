@@ -2,7 +2,13 @@
 
 # Member 5 task (completed by Membre 4 context): implement the main controller.
 
-SCRIPT_DIR="$(dirname "$0")"
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_PATH" ]]; do
+    SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
+    SCRIPT_PATH="$(readlink "$SCRIPT_PATH")"
+    [[ "$SCRIPT_PATH" != /* ]] && SCRIPT_PATH="$SCRIPT_DIR/$SCRIPT_PATH"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 
 # Charger les logs depuis les variables par defaut requises.
 export HISTORY_LOG="${HISTORY_LOG:-/var/log/securewatch/history.log}"
@@ -20,16 +26,48 @@ source "${SCRIPT_DIR}/lib/detection.sh"
 source "${SCRIPT_DIR}/lib/blocking.sh"
 
 show_help() {
-    echo "Usage: $0 [OPTIONS]"
-    echo "Options:"
-    echo "  -h          Afficher cette aide"
-    echo "  -d          Executer la detection seulement"
-    echo "  -b          Bloquer les IP suspectes"
-    echo "  -l <dir>    Specifier un repertoire de logs personnalise"
-    echo "  -r          Restaurer/debloquer toutes les IP"
-    echo "  -f          Execution en fork (background)"
-    echo "  -t          Execution en mode thread (background job)"
-    echo "  -s          Execution en subshell"
+    cat <<HELP
+Usage:
+  securewatch [options]
+  LOG_FILE=/path/to/auth.log THRESHOLD=5 securewatch [options]
+
+Description:
+  SecureWatch analyse les journaux SSH, extrait les tentatives "Failed password",
+  compte les echecs par adresse IP, detecte les IP suspectes selon un seuil,
+  puis peut bloquer ou restaurer ces IP avec iptables.
+
+Options principales:
+  -h          Afficher cette aide detaillee
+  -d          Executer la detection seulement
+  -b          Detecter puis bloquer les IP suspectes avec iptables (admin)
+  -r          Restaurer/debloquer les IP enregistrees dans la blacklist (admin)
+  -l <dir>    Specifier le repertoire de journalisation
+
+Modes d'execution:
+  -s          Executer l'action dans un sous-shell
+  -f          Executer l'action en fork/background sans attendre la fin
+  -t          Executer l'action en job background puis attendre avec wait
+
+Donnees et configuration:
+  LOG_FILE    Fichier d'authentification a analyser (defaut: /var/log/auth.log)
+  THRESHOLD   Nombre minimal d'echecs pour marquer une IP suspecte (defaut: 5)
+  history.log Format: yyyy-mm-dd-hh-mm-ss : username : INFOS|ERROR : message
+
+Codes d'erreur:
+  100         Option non existante
+  101         Parametre obligatoire manquant
+  102         Fichier ou ressource introuvable
+  103         Permission refusee ou privileges administrateur requis
+
+Exemples:
+  securewatch -h
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -s -l ~/securewatch-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -t -l ~/securewatch-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=50 securewatch -d -f -l ~/securewatch-logs
+  sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -b -l /var/log/securewatch
+  sudo securewatch -r -l /var/log/securewatch
+HELP
 }
 
 run_detection() {
@@ -49,6 +87,7 @@ run_blocking() {
     suspects_count=$(count_suspicious_ips 2>/dev/null || echo "0")
     if [[ "$suspects_count" -gt 0 ]]; then
         print_info "$suspects_count IP suspectes trouvées. Blocage automatique..."
+        log_event "INFOS" "$suspects_count IP suspectes trouvees. Blocage automatique"
         block_suspicious_ips
     fi
 }
@@ -56,6 +95,7 @@ run_blocking() {
 main() {
     if [[ $# -eq 0 ]]; then
         print_error "Parametres manquants"
+        log_event "ERROR" "Parametres manquants"
         show_help
         exit 101
     fi
@@ -97,11 +137,13 @@ main() {
                 ;;
             \?)
                 print_error "Option invalide: -$OPTARG"
+                log_event "ERROR" "Option invalide: -$OPTARG"
                 show_help
                 exit 100
                 ;;
             :)
                 print_error "Parametre manquant pour l'option -$OPTARG"
+                log_event "ERROR" "Parametre manquant pour l'option -$OPTARG"
                 show_help
                 exit 101
                 ;;
@@ -110,6 +152,7 @@ main() {
 
     if [[ -z "$action" ]]; then
         print_error "Mode d'execution non specifie (-d, -b ou -r)"
+        log_event "ERROR" "Mode d'execution non specifie (-d, -b ou -r)"
         show_help
         exit 101
     fi
@@ -136,13 +179,16 @@ main() {
     }
 
     if [[ "$subshell" -eq 1 ]]; then
+        log_event "INFOS" "Execution en mode subshell"
         ( execute_action )
     elif [[ "$bg_fork" -eq 1 ]]; then
         execute_action &
         print_info "Execution en mode fork (PID: $!)"
+        log_event "INFOS" "Execution en mode fork (PID: $!)"
     elif [[ "$bg_thread" -eq 1 ]]; then
         execute_action &
         print_info "Execution en mode thread."
+        log_event "INFOS" "Execution en mode thread"
         wait $!
     else
         execute_action

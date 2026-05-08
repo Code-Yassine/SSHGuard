@@ -1,0 +1,27 @@
+2026-05-08-12-40-40 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-12-40-40 : pc : INFO : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-12-40-40 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-40-41 : pc : INFO : Détection terminée : 4 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-12-40-53 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-12-40-53 : pc : INFO : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-12-40-53 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-40-54 : pc : INFO : Détection terminée : 1 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-12-41-47 : pc : INFO : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-12-41-47 : pc : INFO : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-12-41-47 : pc : INFO : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-12-41-48 : pc : INFO : Détection terminée : 1 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-13-19-19 : pc : INFOS : Execution en mode thread
+2026-05-08-13-19-19 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-13-19-19 : pc : INFOS : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-13-19-19 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-13-19-20 : pc : INFOS : Détection terminée : 1 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-13-20-03 : pc : INFOS : Execution en mode thread
+2026-05-08-13-20-03 : pc : INFOS : Debut de l'analyse du fichier : /c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-13-20-03 : pc : INFOS : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-13-20-04 : pc : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-13-20-04 : pc : INFOS : Détection terminée : 1 IP(s) suspecte(s) avec seuil : 5
+2026-05-08-15-33-30 : root : INFOS : Execution en mode thread
+2026-05-08-15-33-30 : root : INFOS : Debut de l'analyse du fichier : /mnt/c/Users/pc/Desktop/SSHGuard/tests/tmp/medium/auth.log
+2026-05-08-15-33-30 : root : INFOS : Extraction terminee : 6 tentatives echouees detectees
+2026-05-08-15-33-30 : root : INFOS : Début de la détection des IP suspectes avec seuil : 5
+2026-05-08-15-33-30 : root : INFOS : Détection terminée : 1 IP(s) suspecte(s) avec seuil : 5

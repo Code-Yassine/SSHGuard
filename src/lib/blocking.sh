@@ -9,6 +9,7 @@ block_ip() {
     # Valider l'IP
     if ! is_valid_ip "$ip"; then
         print_warning "IP invalide ignoree: $ip"
+        log_event "INFOS" "IP invalide ignoree : $ip"
         return 1
     fi
 
@@ -18,6 +19,7 @@ block_ip() {
     # Verifier si l'IP est deja bloquee par iptables
     if iptables -C INPUT -s "$ip" -j DROP 2>/dev/null; then
         print_info "L'IP $ip est deja bloquee par iptables."
+        log_event "INFOS" "IP deja bloquee par iptables : $ip"
     else
         # Bloquer avec iptables
         if iptables -A INPUT -s "$ip" -j DROP; then
@@ -53,6 +55,7 @@ block_suspicious_ips() {
     fi
 
     print_info "Debut du blocage des IP suspectes..."
+    log_event "INFOS" "Debut du blocage des IP suspectes"
 
     while IFS=':' read -r ip count; do
         if [[ -n "$ip" ]]; then
@@ -74,6 +77,7 @@ restore_blocked_ips() {
     fi
 
     print_info "Restauration des IP bloquees..."
+    log_event "INFOS" "Restauration des IP bloquees"
 
     while IFS= read -r ip; do
         if [[ -n "$ip" && "$ip" != "" ]]; then
@@ -83,6 +87,7 @@ restore_blocked_ips() {
                 log_event "INFOS" "IP debloquee : $ip"
             else
                 print_warning "Impossible de debloquer l'IP $ip (peut-etre non bloquee)."
+                log_event "INFOS" "Impossible de debloquer l'IP $ip"
             fi
         fi
     done < "$blocked_log"
@@ -99,9 +104,11 @@ show_blocked_ips() {
     local blocked_log="${BLOCKED_IPS_LOG:-/var/log/securewatch/blacklist.txt}"
 
     print_info "Liste des IP actuellement bloquees :"
+    log_event "INFOS" "Liste des IP actuellement bloquees"
     if [[ -f "$blocked_log" ]]; then
         cat "$blocked_log"
     else
         print_info "Aucun fichier blacklist trouve dans $blocked_log"
+        log_event "INFOS" "Aucun fichier blacklist trouve dans $blocked_log"
     fi
 }
