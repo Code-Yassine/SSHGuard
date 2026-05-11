@@ -41,6 +41,7 @@ Options principales:
   -d          Executer la detection seulement
   -b          Detecter puis bloquer les IP suspectes avec iptables (admin)
   -r          Restaurer/debloquer les IP enregistrees dans la blacklist (admin)
+  -i          Afficher la liste des IP actuellement bloquees
   -l <dir>    Specifier le repertoire de journalisation
 
 Modes d'execution:
@@ -105,7 +106,7 @@ main() {
     local bg_thread=0
     local subshell=0
 
-    while getopts ":hdbl:rfts" opt; do
+    while getopts ":hdbl:rftsi" opt; do
         case ${opt} in
             h)
                 show_help
@@ -126,6 +127,9 @@ main() {
             r)
                 action="restore"
                 ;;
+             i)
+                action="list"
+                ;;   
             f)
                 bg_fork=1
                 ;;
@@ -159,7 +163,10 @@ main() {
 
     execute_action() {
         local ret=0
-        if [[ "$action" == "restore" ]]; then
+        if [[ "$action" == "list" ]]; then
+            show_blocked_ips
+            ret=$?
+        elif [[ "$action" == "restore" ]]; then
             restore_blocked_ips
             ret=$?
         elif [[ "$action" == "block" ]]; then
@@ -169,7 +176,7 @@ main() {
             run_detection
             ret=$?
         fi
-
+        
         if [[ $ret -ge 100 && $ret -le 103 ]]; then
             echo ""
             show_help
