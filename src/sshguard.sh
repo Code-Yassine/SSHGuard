@@ -129,7 +129,7 @@ main() {
                 ;;
              i)
                 action="list"
-                ;;   
+                ;;
             f)
                 bg_fork=1
                 ;;
@@ -176,7 +176,7 @@ main() {
             run_detection
             ret=$?
         fi
-        
+
         if [[ $ret -ge 100 && $ret -le 103 ]]; then
             echo ""
             show_help
