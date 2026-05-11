@@ -70,7 +70,7 @@ Tasks:
 File:
 
 ```text
-src/securewatch.sh
+src/sshguard.sh
 ```
 
 Tasks:

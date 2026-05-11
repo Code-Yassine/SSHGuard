@@ -19,7 +19,7 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{SecureWatch}
+\lhead{SSHGuard}
 \rhead{Source Code Explanation}
 \cfoot{\thepage}
 
@@ -40,7 +40,7 @@
 }
 
 \title{
-    \textbf{SecureWatch: Source Code Explanation}\\
+    \textbf{SSHGuard: Source Code Explanation}\\
     \large Bash Tool for SSH Brute Force Detection and Blocking
 }
 \author{Team Project}
@@ -54,7 +54,7 @@
 
 \section{Project Goal}
 
-SecureWatch is a Bash security tool designed to detect repeated failed SSH login attempts.
+SSHGuard is a Bash security tool designed to detect repeated failed SSH login attempts.
 The program reads an authentication log file, extracts IP addresses from lines containing
 \texttt{Failed password}, counts the number of failed attempts per IP, compares the count
 with a configurable threshold, and optionally blocks suspicious IP addresses using
@@ -72,7 +72,7 @@ The project is organized into small Bash modules. Each file has a clear responsi
 \hline
 \textbf{File} & \textbf{Role} \\
 \hline
-\texttt{src/securewatch.sh} & Main controller. Reads options, loads configuration, chooses the action, and launches execution modes. \\
+\texttt{src/sshguard.sh} & Main controller. Reads options, loads configuration, chooses the action, and launches execution modes. \\
 \hline
 \texttt{src/config/config.conf} & Default configuration values such as threshold, log file, and output log paths. \\
 \hline
@@ -86,19 +86,19 @@ The project is organized into small Bash modules. Each file has a clear responsi
 \hline
 \texttt{src/lib/utils.sh} & Shared helper functions: colored output, file checks, root checks, and IP validation. \\
 \hline
-\texttt{scripts/install.sh} & Installs the command as \texttt{securewatch} so it can be executed from anywhere. \\
+\texttt{scripts/install.sh} & Installs the command as \texttt{sshguard} so it can be executed from anywhere. \\
 \hline
 \texttt{tests/*.sh} & Light, medium, and heavy test scenarios. \\
 \hline
 \end{longtable}
 
-\section{Main Program: \texttt{securewatch.sh}}
+\section{Main Program: \texttt{sshguard.sh}}
 
 \subsection{Loading the Project Files}
 
 The main script first detects its real location. This is important because the program can
-be installed as a symbolic link in \texttt{/usr/local/bin/securewatch}. Even if the user runs
-\texttt{securewatch} from another directory, the script can still find its configuration and
+be installed as a symbolic link in \texttt{/usr/local/bin/sshguard}. Even if the user runs
+\texttt{sshguard} from another directory, the script can still find its configuration and
 library files.
 
 \begin{lstlisting}[style=bashstyle]
@@ -215,7 +215,7 @@ BLOCKED_IPS_LOG="${BLOCKED_IPS_LOG:-logs/blocked_ips.log}"
 Example:
 
 \begin{lstlisting}[style=bashstyle]
-LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -l ~/sshguard-logs
 \end{lstlisting}
 
 \section{Parser Module: \texttt{parser.sh}}
@@ -254,7 +254,7 @@ grep "Failed password" "$log_file" 2>/dev/null | \
 The extracted IP addresses are stored in:
 
 \begin{lstlisting}[style=bashstyle]
-/tmp/securewatch_ips.tmp
+/tmp/sshguard_ips.tmp
 \end{lstlisting}
 
 \section{Detection Module: \texttt{detection.sh}}
@@ -286,7 +286,7 @@ fi
 The suspicious IPs are stored in:
 
 \begin{lstlisting}[style=bashstyle]
-/tmp/securewatch_suspects.tmp
+/tmp/sshguard_suspects.tmp
 \end{lstlisting}
 
 \section{Blocking Module: \texttt{blocking.sh}}
@@ -370,13 +370,13 @@ The IP validation first checks the general format, then verifies that every octe
 
 \section{Install Script: \texttt{scripts/install.sh}}
 
-The install script prepares the project and creates a command named \texttt{securewatch}.
+The install script prepares the project and creates a command named \texttt{sshguard}.
 This allows the user to run the tool from any directory.
 
 \begin{lstlisting}[style=bashstyle]
 BIN_DIR="${INSTALL_BIN_DIR:-/usr/local/bin}"
-COMMAND_NAME="${COMMAND_NAME:-securewatch}"
-TARGET="$ROOT_DIR/src/securewatch.sh"
+COMMAND_NAME="${COMMAND_NAME:-sshguard}"
+TARGET="$ROOT_DIR/src/sshguard.sh"
 LINK_PATH="$BIN_DIR/$COMMAND_NAME"
 ln -sf "$TARGET" "$LINK_PATH"
 \end{lstlisting}
@@ -386,7 +386,7 @@ Typical installation on Linux:
 \begin{lstlisting}[style=bashstyle]
 cd ~/SSHGuard
 bash scripts/install.sh
-securewatch -h
+sshguard -h
 \end{lstlisting}
 
 \section{Testing Strategy}
@@ -431,22 +431,22 @@ EOF
 Run detection:
 
 \begin{lstlisting}[style=bashstyle]
-LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -l ~/sshguard-demo-logs
 \end{lstlisting}
 
 Run the three execution modes:
 
 \begin{lstlisting}[style=bashstyle]
-LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -s -l ~/securewatch-demo-logs
-LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -t -l ~/securewatch-demo-logs
-LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -f -l ~/securewatch-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -s -l ~/sshguard-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -t -l ~/sshguard-demo-logs
+LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -f -l ~/sshguard-demo-logs
 \end{lstlisting}
 
 Run blocking and restore:
 
 \begin{lstlisting}[style=bashstyle]
-sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -b -l /var/log/securewatch
-sudo securewatch -r -l /var/log/securewatch
+sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -b -l /var/log/sshguard
+sudo sshguard -r -l /var/log/sshguard
 \end{lstlisting}
 
 \section{Requirement Mapping}
@@ -469,13 +469,13 @@ Error handling & Uses error codes such as 100, 101, 102, and 103. \\
 \hline
 Light, medium, heavy tests & Implemented in \texttt{tests/light\_test.sh}, \texttt{tests/medium\_test.sh}, and \texttt{tests/heavy\_test.sh}. \\
 \hline
-Help documentation & Available with \texttt{securewatch -h}. \\
+Help documentation & Available with \texttt{sshguard -h}. \\
 \hline
 \end{longtable}
 
 \section{Conclusion}
 
-SecureWatch demonstrates a complete Bash-based security workflow. It combines log parsing,
+SSHGuard demonstrates a complete Bash-based security workflow. It combines log parsing,
 regular expressions, file manipulation, pipes, process control, environment variables,
 privilege checks, error management, and firewall commands. Its modular design makes the
 source code easy to explain: the parser extracts IPs, the detector identifies suspicious

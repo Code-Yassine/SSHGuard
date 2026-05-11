@@ -17,12 +17,13 @@ SSHGuard/
 └── logs/
 ```
 
-## Future Usage
+## Usage
 
 ```bash
-bash src/securewatch.sh -h
-bash src/securewatch.sh -d
-bash src/securewatch.sh -b
+bash scripts/install.sh
+sshguard -h
+sshguard -d
+sshguard -b
 ```
 
 These commands will work after the team completes the Bash functions.

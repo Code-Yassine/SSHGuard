@@ -11,8 +11,8 @@ done
 SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_PATH")" && pwd)"
 
 # Charger les logs depuis les variables par defaut requises.
-export HISTORY_LOG="${HISTORY_LOG:-/var/log/securewatch/history.log}"
-export BLOCKED_IPS_LOG="${BLOCKED_IPS_LOG:-/var/log/securewatch/blacklist.txt}"
+export HISTORY_LOG="${HISTORY_LOG:-/var/log/sshguard/history.log}"
+export BLOCKED_IPS_LOG="${BLOCKED_IPS_LOG:-/var/log/sshguard/blacklist.txt}"
 
 
 # Load config.conf
@@ -28,11 +28,11 @@ source "${SCRIPT_DIR}/lib/blocking.sh"
 show_help() {
     cat <<HELP
 Usage:
-  securewatch [options]
-  LOG_FILE=/path/to/auth.log THRESHOLD=5 securewatch [options]
+  sshguard [options]
+  LOG_FILE=/path/to/auth.log THRESHOLD=5 sshguard [options]
 
 Description:
-  SecureWatch analyse les journaux SSH, extrait les tentatives "Failed password",
+  SSHGuard analyse les journaux SSH, extrait les tentatives "Failed password",
   compte les echecs par adresse IP, detecte les IP suspectes selon un seuil,
   puis peut bloquer ou restaurer ces IP avec iptables.
 
@@ -60,13 +60,13 @@ Codes d'erreur:
   103         Permission refusee ou privileges administrateur requis
 
 Exemples:
-  securewatch -h
-  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -l ~/securewatch-logs
-  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -s -l ~/securewatch-logs
-  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -d -t -l ~/securewatch-logs
-  LOG_FILE=/tmp/auth-demo.log THRESHOLD=50 securewatch -d -f -l ~/securewatch-logs
-  sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 securewatch -b -l /var/log/securewatch
-  sudo securewatch -r -l /var/log/securewatch
+  sshguard -h
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -l ~/sshguard-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -s -l ~/sshguard-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -d -t -l ~/sshguard-logs
+  LOG_FILE=/tmp/auth-demo.log THRESHOLD=50 sshguard -d -f -l ~/sshguard-logs
+  sudo env LOG_FILE=/tmp/auth-demo.log THRESHOLD=5 sshguard -b -l /var/log/sshguard
+  sudo sshguard -r -l /var/log/sshguard
 HELP
 }
 

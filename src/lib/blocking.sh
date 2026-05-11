@@ -4,7 +4,7 @@
 # Blocks a single IP address with iptables, avoids duplicates, and saves to blacklist
 block_ip() {
     local ip="$1"
-    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/securewatch/blacklist.txt}"
+    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/sshguard/blacklist.txt}"
 
     # Valider l'IP
     if ! is_valid_ip "$ip"; then
@@ -47,7 +47,7 @@ block_ip() {
 
 # Reads suspicious IPs and blocks them
 block_suspicious_ips() {
-    local suspects_file="${TEMP_SUSPECTS_FILE:-/tmp/securewatch_suspects.tmp}"
+    local suspects_file="${TEMP_SUSPECTS_FILE:-/tmp/sshguard_suspects.tmp}"
     local ip count
 
     if ! require_file "$suspects_file"; then
@@ -66,7 +66,7 @@ block_suspicious_ips() {
 
 # Restores all blocked IPs
 restore_blocked_ips() {
-    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/securewatch/blacklist.txt}"
+    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/sshguard/blacklist.txt}"
     local ip
 
     # Verifier les permissions root
@@ -101,7 +101,7 @@ restore_blocked_ips() {
 
 # Displays currently blocked IPs
 show_blocked_ips() {
-    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/securewatch/blacklist.txt}"
+    local blocked_log="${BLOCKED_IPS_LOG:-/var/log/sshguard/blacklist.txt}"
 
     print_info "Liste des IP actuellement bloquees :"
     log_event "INFOS" "Liste des IP actuellement bloquees"

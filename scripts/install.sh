@@ -6,14 +6,14 @@ set -o pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN_DIR="${INSTALL_BIN_DIR:-/usr/local/bin}"
-COMMAND_NAME="${COMMAND_NAME:-securewatch}"
-TARGET="$ROOT_DIR/src/securewatch.sh"
+COMMAND_NAME="${COMMAND_NAME:-sshguard}"
+TARGET="$ROOT_DIR/src/sshguard.sh"
 LINK_PATH="$BIN_DIR/$COMMAND_NAME"
 
 cd "$ROOT_DIR"
 mkdir -p logs
 touch logs/history.log logs/blocked_ips.log
-chmod +x src/securewatch.sh src/lib/*.sh tests/*.sh scripts/*.sh
+chmod +x src/*.sh src/lib/*.sh tests/*.sh scripts/*.sh
 
 if [[ ! -d "$BIN_DIR" ]]; then
     if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then

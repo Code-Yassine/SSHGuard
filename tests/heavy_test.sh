@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$ROOT_DIR/tests/tmp/heavy"
 AUTH_LOG="$TMP_DIR/auth.log"
 LOG_DIR="$TMP_DIR/logs"
-SUSPECTS_FILE="/tmp/securewatch_suspects.tmp"
+SUSPECTS_FILE="/tmp/sshguard_suspects.tmp"
 
 mkdir -p "$TMP_DIR" "$LOG_DIR"
 : > "$AUTH_LOG"
@@ -25,7 +25,7 @@ for i in $(seq 1 300); do
     printf "Jan  1 00:00:01 host sshd[%s]: Failed password for invalid user load from %s port 22 ssh2\n" "$i" "$ip" >> "$AUTH_LOG"
 done
 
-LOG_FILE="$AUTH_LOG" THRESHOLD=50 bash "$ROOT_DIR/src/securewatch.sh" -d -f -l "$LOG_DIR"
+LOG_FILE="$AUTH_LOG" THRESHOLD=50 bash "$ROOT_DIR/src/sshguard.sh" -d -f -l "$LOG_DIR"
 
 for _ in $(seq 1 50); do
     if grep -q '^203\.0\.113\.10:160$' "$SUSPECTS_FILE" 2>/dev/null &&

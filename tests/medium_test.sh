@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$ROOT_DIR/tests/tmp/medium"
 AUTH_LOG="$TMP_DIR/auth.log"
 LOG_DIR="$TMP_DIR/logs"
-SUSPECTS_FILE="/tmp/securewatch_suspects.tmp"
+SUSPECTS_FILE="/tmp/sshguard_suspects.tmp"
 
 mkdir -p "$TMP_DIR" "$LOG_DIR"
 
@@ -21,7 +21,7 @@ Jan  1 00:00:05 host sshd[5]: Failed password for invalid user test from 192.168
 Jan  1 00:00:06 host sshd[6]: Failed password for invalid user test from 192.168.1.51 port 116 ssh2
 LOG
 
-LOG_FILE="$AUTH_LOG" THRESHOLD=5 bash "$ROOT_DIR/src/securewatch.sh" -d -t -l "$LOG_DIR"
+LOG_FILE="$AUTH_LOG" THRESHOLD=5 bash "$ROOT_DIR/src/sshguard.sh" -d -t -l "$LOG_DIR"
 
 grep -q '^192\.168\.1\.50:5$' "$SUSPECTS_FILE"
 grep -q "1 IP(s) suspecte(s)" "$LOG_DIR/history.log"
