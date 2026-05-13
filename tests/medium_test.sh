@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_DIR="$ROOT_DIR/tests/tmp/medium"
 AUTH_LOG="$TMP_DIR/auth.log"
 LOG_DIR="$TMP_DIR/logs"
-SUSPECTS_FILE="/tmp/sshguard_suspects.tmp"
+SUSPECTS_FILE="${TMPDIR:-/tmp}/sshguard_${EUID:-$(id -u)}_suspects.tmp"
 
 mkdir -p "$TMP_DIR" "$LOG_DIR"
 

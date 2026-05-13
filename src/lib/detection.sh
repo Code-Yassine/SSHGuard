@@ -11,7 +11,7 @@
 # Example:
 #   If THRESHOLD=5 and one IP appears 5 times, mark it suspicious.
 
-readonly TEMP_SUSPECTS_FILE="/tmp/sshguard_suspects.tmp"
+readonly TEMP_SUSPECTS_FILE="${SSHGUARD_TEMP_SUSPECTS_FILE:-${TMPDIR:-/tmp}/sshguard_${EUID:-$(id -u)}_suspects.tmp}"
 
 detect_suspicious_ips() {
     local threshold="$1"

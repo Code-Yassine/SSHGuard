@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly DEFAULT_LOG_FILE="/var/log/auth.log"
-readonly TEMP_IPS_FILE="/tmp/sshguard_ips.tmp"
+readonly TEMP_IPS_FILE="${SSHGUARD_TEMP_IPS_FILE:-${TMPDIR:-/tmp}/sshguard_${EUID:-$(id -u)}_ips.tmp}"
 
 extract_failed_ips() {
     local log_file="${1:-$DEFAULT_LOG_FILE}"
