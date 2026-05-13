@@ -2,6 +2,9 @@
 logs/*.log
 !logs/.gitkeep
 
+# Tests logs
+tests/tmp/
+
 # OS/editor files
 .DS_Store
 Thumbs.db
